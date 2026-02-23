@@ -1,7 +1,7 @@
 package com.nit.controller;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.nit.entity.Student;
 import com.nit.repository.StudentRepository;
 
@@ -25,7 +27,8 @@ public class StudentController {
     @Autowired
     private StudentRepository repo;
 
-    private final String UPLOAD_DIR = System.getProperty("user.dir") + "/uploads/";
+    @Autowired
+    private Cloudinary cloudinary;
 
     @PostMapping("/save")
     public ResponseEntity<?> saveStudent(
@@ -33,19 +36,22 @@ public class StudentController {
             @RequestParam("resume") MultipartFile resume,
             @ModelAttribute Student student) throws IOException {
 
-        File dir = new File(UPLOAD_DIR);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
+        // Upload image to Cloudinary
+        Map imageUpload = cloudinary.uploader().upload(
+                image.getBytes(),
+                ObjectUtils.emptyMap()
+        );
 
-        String imagePath = "uploads/" + System.currentTimeMillis() + "_" + image.getOriginalFilename();
-        String resumePath = "uploads/" + System.currentTimeMillis() + "_" + resume.getOriginalFilename();
+        Map resumeUpload = cloudinary.uploader().upload(
+                resume.getBytes(),
+                ObjectUtils.emptyMap()
+        );
 
-        image.transferTo(new File(UPLOAD_DIR + imagePath.substring(8)));
-        resume.transferTo(new File(UPLOAD_DIR + resumePath.substring(8)));
+        String imageUrl = imageUpload.get("secure_url").toString();
+        String resumeUrl = resumeUpload.get("secure_url").toString();
 
-        student.setImagePath(imagePath);
-        student.setResumePath(resumePath);
+        student.setImagePath(imageUrl);
+        student.setResumePath(resumeUrl);
 
         repo.save(student);
 
