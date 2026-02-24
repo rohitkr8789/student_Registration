@@ -1,5 +1,6 @@
 package com.nit.controller;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
@@ -40,19 +41,29 @@ public class StudentController {
             @RequestParam("resume") MultipartFile resume,
             @ModelAttribute Student student) throws IOException {
 
-        // Upload image to Cloudinary
+        // Upload image
         Map imageUpload = cloudinary.uploader().upload(
                 image.getBytes(),
                 ObjectUtils.emptyMap()
         );
-        
-        // Upload resume to Cloudinary as a pdf
+
+        // Get original file extension
+        String originalName = resume.getOriginalFilename();
+        String extension = originalName.substring(originalName.lastIndexOf("."));
+
+        // Create temp file with correct extension
+        File tempFile = File.createTempFile("resume-", extension);
+        resume.transferTo(tempFile);
+
+        // Upload as raw (works for PDF, Excel, DOC, etc.)
         Map resumeUpload = cloudinary.uploader().upload(
-                resume.getInputStream(),
+                tempFile,
                 ObjectUtils.asMap(
                         "resource_type", "raw"
                 )
         );
+
+        tempFile.delete();
 
         String imageUrl = imageUpload.get("secure_url").toString();
         String resumeUrl = resumeUpload.get("secure_url").toString();
