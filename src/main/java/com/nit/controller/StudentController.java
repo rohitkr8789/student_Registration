@@ -1,6 +1,5 @@
 package com.nit.controller;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
@@ -21,9 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 
-
-
-
 @RestController
 @RequestMapping("/api/students")
 @CrossOrigin("*")
@@ -41,29 +37,19 @@ public class StudentController {
             @RequestParam("resume") MultipartFile resume,
             @ModelAttribute Student student) throws IOException {
 
-        // Upload image
         Map imageUpload = cloudinary.uploader().upload(
                 image.getBytes(),
                 ObjectUtils.emptyMap()
         );
 
-        // Get original file extension
-        String originalName = resume.getOriginalFilename();
-        String extension = originalName.substring(originalName.lastIndexOf("."));
-
-        // Create temp file with correct extension
-        File tempFile = File.createTempFile("resume-", extension);
-        resume.transferTo(tempFile);
-
-        // Upload as raw (works for PDF, Excel, DOC, etc.)
         Map resumeUpload = cloudinary.uploader().upload(
-                tempFile,
+                resume.getBytes(),
                 ObjectUtils.asMap(
-                        "resource_type", "raw"
+                        "resource_type", "raw",
+                        "use_filename", true,
+                        "unique_filename", true
                 )
         );
-
-        tempFile.delete();
 
         String imageUrl = imageUpload.get("secure_url").toString();
         String resumeUrl = resumeUpload.get("secure_url").toString();
