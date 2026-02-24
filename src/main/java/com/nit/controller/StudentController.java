@@ -45,11 +45,12 @@ public class StudentController {
                 image.getBytes(),
                 ObjectUtils.emptyMap()
         );
-
+        
+        // Upload resume to Cloudinary as a pdf
         Map resumeUpload = cloudinary.uploader().upload(
                 resume.getBytes(),
                 ObjectUtils.asMap(
-                        "resource_type", "auto"
+                        "resource_type", "raw"
                 )
         );
 
