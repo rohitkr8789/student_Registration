@@ -48,7 +48,7 @@ public class StudentController {
         
         // Upload resume to Cloudinary as a pdf
         Map resumeUpload = cloudinary.uploader().upload(
-                resume.getBytes(),
+                resume.getInputStream(),
                 ObjectUtils.asMap(
                         "resource_type", "raw"
                 )
