@@ -3,6 +3,9 @@ package com.nit.controller;
 import java.io.IOException;
 import java.util.Map;
 
+import com.nit.entity.Student;
+import com.nit.repository.StudentRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -16,8 +19,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import com.nit.entity.Student;
-import com.nit.repository.StudentRepository;
+
+
+
 
 @RestController
 @RequestMapping("/api/students")
@@ -44,7 +48,9 @@ public class StudentController {
 
         Map resumeUpload = cloudinary.uploader().upload(
                 resume.getBytes(),
-                ObjectUtils.emptyMap()
+                ObjectUtils.asMap(
+                        "resource_type", "auto"
+                )
         );
 
         String imageUrl = imageUpload.get("secure_url").toString();
